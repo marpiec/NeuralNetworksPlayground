@@ -19,11 +19,32 @@ class GameEngine(val model: GameModel, val keyboardState: KeyboardState) {
             is RectangularObstacle -> updateRectangularObstacle(it, now)
         }}
 
-        model.players.forEach {
+        model.players.filter { !it.crashed }.forEach {
             updatePlayer(it, playerInput)
         }
 
         updateCamera()
+
+        detectCollisions()
+    }
+
+    private fun detectCollisions() {
+
+        model.players.filter { !it.crashed }.forEach {player ->
+            val playerRectangle = player.toRectangle()
+
+            val crashedOnWall = playerRectangle.x < 0.0 || playerRectangle.x + playerRectangle.width > 20.0
+            if(crashedOnWall) {
+                player.crashed = true
+            } else {
+                val collisionDetected = model.obstacles.find { collides(it.toRectangle(), playerRectangle) } != null
+                if(collisionDetected) {
+                    player.crashed = true
+                }
+            }
+
+        }
+
     }
 
     private fun updateRectangularObstacle(o: RectangularObstacle, now: Long): Unit {
@@ -34,24 +55,43 @@ class GameEngine(val model: GameModel, val keyboardState: KeyboardState) {
     private fun updatePlayer(player: Player, playerInput: PlayerInput): Unit {
 
         if(playerInput.accelerate) {
-            player.speed = Math.min(player.speed + 0.0001, 0.01)
+            player.speedY = Math.max(player.speedY - 0.0001, -0.01)
         }
 
         if(playerInput.breaking) {
-            player.speed = Math.max(player.speed - 0.0001, - 0.002)
+            player.speedY = Math.min(player.speedY + 0.0001, 0.0)
+        }
+
+        if(!playerInput.accelerate && !playerInput.breaking && player.speedY < 0) {
+            player.speedY = Math.min(player.speedY + 0.0001, 0.0)
         }
 
         if(playerInput.turnLeft) {
-            player.direction -= 0.002
+            player.speedX = Math.max(player.speedX - 0.0001, -0.01)
         }
 
         if(playerInput.turnRight) {
-            player.direction += 0.002
+            player.speedX = Math.min(player.speedX + 0.0001, 0.01)
         }
 
-        player.x += player.speed * Math.sin(player.direction)
-        player.y -= player.speed * Math.cos(player.direction)
+        if(!playerInput.turnLeft && !playerInput.turnRight) {
+            if(player.speedX > 0) {
+                player.speedX = Math.max(player.speedX - 0.0001, 0.0)
+            } else if (player.speedX < 0) {
+                player.speedX = Math.min(player.speedX + 0.0001, 0.0)
+            }
+        }
 
+        player.x += player.speedX
+        player.y += player.speedY
+
+    }
+
+    private fun collides(a: Rectangle, b: Rectangle): Boolean {
+        return a.x < b.x + b.width &&
+            a.x + a.width > b.x &&
+            a.y < b.y + b.height &&
+            a.height + a.y > b.y
     }
 
     private fun updateCamera(): Unit {
