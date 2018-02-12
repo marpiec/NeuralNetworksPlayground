@@ -55,7 +55,7 @@ class GameEngine(val model: GameModel, val keyboardState: KeyboardState) {
     private fun updatePlayer(player: Player, playerInput: PlayerInput): Unit {
 
         if(playerInput.accelerate) {
-            player.speedY = Math.max(player.speedY - 0.0001, -0.01)
+            player.speedY = Math.max(player.speedY - 0.00005, -0.01)
         }
 
         if(playerInput.breaking) {
@@ -63,22 +63,22 @@ class GameEngine(val model: GameModel, val keyboardState: KeyboardState) {
         }
 
         if(!playerInput.accelerate && !playerInput.breaking && player.speedY < 0) {
-            player.speedY = Math.min(player.speedY + 0.0001, 0.0)
+            player.speedY = Math.min(player.speedY + 0.00002, 0.0)
         }
 
         if(playerInput.turnLeft) {
-            player.speedX = Math.max(player.speedX - 0.0001, -0.01)
+            player.speedX = Math.max(player.speedX - 0.00005, -0.01)
         }
 
         if(playerInput.turnRight) {
-            player.speedX = Math.min(player.speedX + 0.0001, 0.01)
+            player.speedX = Math.min(player.speedX + 0.00005, 0.01)
         }
 
         if(!playerInput.turnLeft && !playerInput.turnRight) {
             if(player.speedX > 0) {
-                player.speedX = Math.max(player.speedX - 0.0001, 0.0)
+                player.speedX = Math.max(player.speedX - 0.00002, 0.0)
             } else if (player.speedX < 0) {
-                player.speedX = Math.min(player.speedX + 0.0001, 0.0)
+                player.speedX = Math.min(player.speedX + 0.00002, 0.0)
             }
         }
 
