@@ -1,27 +1,33 @@
 package pl.marpiec.neuralnetworks.drivinggame
 
-import pl.marpiec.neuralnetworks.KeyboardState
 
-
-class GameEngine(val model: GameModel, val keyboardState: KeyboardState) {
+class GameEngine(val model: GameModel,
+                 val artificialIntelligence: ArtificialIntelligence,
+                 val onGameEnd: () -> Unit) {
 
     var startTime: Long = 0
 
     fun nextFrame(now: Long): Unit {
-
-        val playerInput = PlayerInput(keyboardState.left, keyboardState.right, keyboardState.up, keyboardState.down)
 
         model.obstacles.forEach { when(it) {
             is RectangularObstacle -> updateRectangularObstacle(it, now)
         }}
 
         model.players.filter { !it.crashed }.forEach {
+
+            val playerInput = artificialIntelligence.getInputForPlayer(it)
             updatePlayer(it, playerInput)
         }
 
         updateCamera()
 
         detectCollisions()
+
+
+        if(model.players.all { it.crashed }) {
+            onGameEnd()
+        }
+
     }
 
     private fun detectCollisions() {

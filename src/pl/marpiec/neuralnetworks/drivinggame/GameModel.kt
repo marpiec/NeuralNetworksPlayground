@@ -17,7 +17,8 @@ interface Obstacle : VisibleObject {
     fun toRectangle(): Rectangle
 }
 
-class Player(override var x: Double,
+class Player(val id: Int,
+             override var x: Double,
              override var y: Double,
              val width: Double,
              val length: Double,
@@ -67,6 +68,11 @@ class GameModel(var trackWidth: Double,
 
     fun addPlayer (player: Player): Unit {
         players += player
+    }
+
+    fun clear() {
+        players.clear()
+        obstacles.clear()
     }
 
 }
