@@ -44,8 +44,6 @@ class Game(val canvas: Canvas,
             model.addObstacle(RectangularObstacle(o, (-index * 7 - 5).toDouble(), 8.0, 1.0))
         }
 
-
-
         model.addPlayer(Player(10.0, 0.0, 1.0, 2.0, 0.0, 0.0, false))
 
     }

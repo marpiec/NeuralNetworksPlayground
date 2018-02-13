@@ -7,10 +7,6 @@ class GameEngine(val model: GameModel, val keyboardState: KeyboardState) {
 
     var startTime: Long = 0
 
-    fun start(now: Long): Unit {
-        startTime = now
-    }
-
     fun nextFrame(now: Long): Unit {
 
         val playerInput = PlayerInput(keyboardState.left, keyboardState.right, keyboardState.up, keyboardState.down)
