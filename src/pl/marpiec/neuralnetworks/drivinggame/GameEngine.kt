@@ -8,20 +8,28 @@ class GameEngine(val model: GameModel,
     var startTime: Long = 0
     var frame: Long = 0
 
-    fun nextFrame(now: Long): Unit {
+    fun nextFrame(now: Long, delta: Long): Unit {
 
 
 
         model.players.filter { !it.crashed }.forEach {player ->
 
 
-            val distanceLeft = distance(player, - player.width / 2)
-            val distanceRight = distance(player, player.width / 2)
+            val distanceLeft = frontDistance(player.x - player.width / 2, player.y - player.length / 2)
+            val distanceRight = frontDistance(player.x + player.width / 2, player.y - player.length / 2)
 
-            val perception = PlayerPerception((player.x - player.width) / 20, (20.0 - player.x - player.width) / 20, distanceLeft, distanceRight)
+            val distanceLeftLeft = frontDistance(player.x - player.width * 2, player.y)
+            val distanceRightRight = frontDistance(player.x + player.width * 2, player.y)
+
+//            val ortogonalDistance = ortogonalDistance(player.)
+
+            val perception = PlayerPerception(player.speedX, player.speedY, (player.x - player.width), (20.0 - player.x - player.width), distanceLeft, distanceRight, distanceLeftLeft, distanceRightRight)
+
+
+//            println("${player.id} ${perception}")
 
             val playerInput = artificialIntelligence.getInputForPlayer(player, perception)
-            updatePlayer(player, playerInput)
+            updatePlayer(player, playerInput, delta)
         }
 
         model.obstacles.forEach { when(it) {
@@ -34,24 +42,33 @@ class GameEngine(val model: GameModel,
 
         frame++
 
-        if(model.players.all { it.crashed } || frame > 4000) {
+        if(model.players.all { it.crashed } || frame > 5000) {
             onGameEnd()
             frame = 0
         }
 
     }
 
-    private fun distance(player: Player, shift: Double): Double {
-        val obstacleDistance = model.obstacles.filter { obstacle ->
+    private fun frontDistance(x: Double, y: Double): Double {
+        val inFront = model.obstacles.filter { obstacle ->
             val rectangle = obstacle.toRectangle()
-            rectangle.y + rectangle.height < player.y && rectangle.x < player.x + shift && rectangle.x + rectangle.width > player.x + shift;
-        }.sortedBy { -it.y }.map { player.y - it.y }.firstOrNull()
+            rectangle.y + rectangle.height <= y && rectangle.x <= x && rectangle.x + rectangle.width >= x;
+        }
+        var obstacle: Obstacle? = null
 
-        return if (obstacleDistance == null) {
+        inFront.forEach {
+            if(obstacle == null || it.y > obstacle!!.y) {
+                obstacle = it
+            }
+        }
+
+        return if(obstacle == null) {
             10000.0
         } else {
-            obstacleDistance
+            val rect = obstacle!!.toRectangle()
+            y - rect.y + rect.width
         }
+
     }
 
     private fun detectCollisions() {
@@ -78,44 +95,69 @@ class GameEngine(val model: GameModel,
         // Do nothing
     }
 
-    private fun updatePlayer(player: Player, playerInput: PlayerInput): Unit {
+    private fun updatePlayer(player: Player, playerInput: PlayerInput, delta: Long): Unit {
 
-        if(playerInput.accelerate) {
-//            player.speedY = Math.max(player.speedY - 0.00005, -0.01)
-            player.speedY = -.01
-        }
+        val inertion = true
 
-        if(playerInput.breaking) {
-            player.speedY = 0.0
-//            player.speedY = Math.min(player.speedY + 0.0001, 0.0)
-        }
+        if(inertion) {
+            if(playerInput.accelerate) {
+                player.speedY = Math.max(player.speedY - 0.00003 * delta, -0.01)
+            }
 
-        if(!playerInput.accelerate && !playerInput.breaking && player.speedY < 0) {
-            player.speedY = 0.0
-//            player.speedY = Math.min(player.speedY + 0.00002, 0.0)
-        }
+            if(playerInput.breaking) {
+            player.speedY = Math.min(player.speedY + 0.0001* delta, 0.0)
+            }
 
-        if(playerInput.turnLeft) {
-            player.speedX = -.01
-//            player.speedX = Math.max(player.speedX - 0.00005, -0.01)
-        }
-
-        if(playerInput.turnRight) {
-            player.speedX = .01
-//            player.speedX = Math.min(player.speedX + 0.00005, 0.01)
-        }
-
-        if(!playerInput.turnLeft && !playerInput.turnRight) {
-            player.speedX = 0.0;
-//            if(player.speedX > 0) {
-//                player.speedX = Math.max(player.speedX - 0.00002, 0.0)
-//            } else if (player.speedX < 0) {
-//                player.speedX = Math.min(player.speedX + 0.00002, 0.0)
+//            if(!playerInput.accelerate && !playerInput.breaking && player.speedY < 0) {
+//            player.speedY = Math.min(player.speedY + 0.00002* delta, 0.0)
 //            }
+
+            if(playerInput.turnLeft) {
+            player.speedX = Math.max(player.speedX - 0.0002* delta, -0.01)
+            }
+
+            if(playerInput.turnRight) {
+            player.speedX = Math.min(player.speedX + 0.0002* delta, 0.01)
+            }
+
+            if(!playerInput.turnLeft && !playerInput.turnRight) {
+                if(player.speedX > 0) {
+                    player.speedX = Math.max(player.speedX - 0.00002* delta, 0.0)
+                } else if (player.speedX < 0) {
+                    player.speedX = Math.min(player.speedX + 0.00002* delta, 0.0)
+                }
+            }
+        } else {
+            if(playerInput.accelerate) {
+                player.speedY = Math.max(player.speedY - 0.00005 * delta, -0.01)
+//                player.speedY = -.01
+            }
+
+            if(playerInput.breaking) {
+//                player.speedY = 0.0
+                player.speedY = Math.min(player.speedY + 0.0001* delta, 0.0)
+            }
+
+//            if(!playerInput.accelerate && !playerInput.breaking) {
+//                player.speedY = 0.0
+//                player.speedY = Math.min(player.speedY + 0.00002* delta, 0.0)
+//            }
+
+            if(playerInput.turnLeft) {
+                player.speedX = -.01
+            }
+
+            if(playerInput.turnRight) {
+                player.speedX = .01
+            }
+
+            if(!playerInput.turnLeft && !playerInput.turnRight) {
+                player.speedX = 0.0;
+            }
         }
 
-        player.x += player.speedX
-        player.y += player.speedY
+        player.x += player.speedX * delta
+        player.y += player.speedY * delta
 
     }
 
@@ -136,7 +178,7 @@ class GameEngine(val model: GameModel,
             }
         }
 
-        model.camera.y = topPlayer.y - 5
+        model.camera.y = topPlayer.y - 9
 
     }
 

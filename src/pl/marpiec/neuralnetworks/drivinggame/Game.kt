@@ -8,7 +8,7 @@ import pl.marpiec.neuralnetworks.KeyboardState
 class Game(val canvas: Canvas,
            val keyboardState: KeyboardState) {
 
-    private val players = 60
+    private val players = 40
 
     private val model: GameModel = GameModel.empty()
     private val artificialIntelligence = ArtificialIntelligence()
@@ -36,7 +36,19 @@ class Game(val canvas: Canvas,
         startTime = System.currentTimeMillis()
         engine.startTime = startTime
         lastFrameTime = startTime
+
+
+        for(i in 1..100000) {
+            val currentTime = System.currentTimeMillis()
+            nextFrame(currentTime, 1)
+            lastFrameTime = currentTime
+        }
+        println("Initialization in " + (System.currentTimeMillis() - startTime))
+
+
         animationTimer.start()
+
+
 
     }
 
@@ -46,16 +58,16 @@ class Game(val canvas: Canvas,
 
         artificialIntelligence.mutate(model.players)
 
-        val obs: List<Double> = listOf(5.0, 13.0, 18.0, 7.0, 4.0, 11.0, 16.0, 4.0, 15.0, 14.0, 4.0, 10.0, 5.0, 15.0, 7.0, 12.0, 7.0, 13.0, 11.0)
+        val obs: List<Double> = listOf(5.0, 13.0, 2.0 ,18.5, 8.0, 16.0, 4.0, 11.0, 1.5, 16.0, 4.0, 2.0,18.5, 15.0, 14.0, 4.0, 2.0, 10.0, 5.0, 15.0, 7.0,18.5, 12.0, 7.0, 13.0, 11.0)
 
         model.clear()
 
         obs.forEachIndexed { index, o ->
-            model.addObstacle(RectangularObstacle(o, (-index * 5 - 5).toDouble(), 3.0, 1.0))
+            model.addObstacle(RectangularObstacle(o, (-index * 3 - 5).toDouble(), 2.0, 1.0))
         }
 
         for (p in 1..players) {
-            model.addPlayer(Player(p, 7.0, 0.0, 1.0, 2.0, 0.0, 0.0, false))
+            model.addPlayer(Player(p, 7.0, 0.0, 0.6, 1.4, 0.0, 0.0, false))
         }
 
     }
@@ -64,7 +76,7 @@ class Game(val canvas: Canvas,
     private fun nextFrame(currentTime: Long, timeDelta: Long): Unit {
         var i = 0
         while(i < timeDelta) {
-            engine.nextFrame(currentTime)
+            engine.nextFrame(currentTime, 1)
             i += 1
         }
         painter.paint()
