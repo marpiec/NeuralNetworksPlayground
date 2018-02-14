@@ -10,15 +10,23 @@ class GameEngine(val model: GameModel,
 
     fun nextFrame(now: Long): Unit {
 
+
+
+        model.players.filter { !it.crashed }.forEach {player ->
+
+
+            val distanceLeft = distance(player, - player.width / 2)
+            val distanceRight = distance(player, player.width / 2)
+
+            val perception = PlayerPerception((player.x - player.width) / 20, (20.0 - player.x - player.width) / 20, distanceLeft, distanceRight)
+
+            val playerInput = artificialIntelligence.getInputForPlayer(player, perception)
+            updatePlayer(player, playerInput)
+        }
+
         model.obstacles.forEach { when(it) {
             is RectangularObstacle -> updateRectangularObstacle(it, now)
         }}
-
-        model.players.filter { !it.crashed }.forEach {
-
-            val playerInput = artificialIntelligence.getInputForPlayer(it)
-            updatePlayer(it, playerInput)
-        }
 
         updateCamera()
 
@@ -26,11 +34,24 @@ class GameEngine(val model: GameModel,
 
         frame++
 
-        if(model.players.all { it.crashed } || frame > 5000) {
+        if(model.players.all { it.crashed } || frame > 4000) {
             onGameEnd()
             frame = 0
         }
 
+    }
+
+    private fun distance(player: Player, shift: Double): Double {
+        val obstacleDistance = model.obstacles.filter { obstacle ->
+            val rectangle = obstacle.toRectangle()
+            rectangle.y + rectangle.height < player.y && rectangle.x < player.x + shift && rectangle.x + rectangle.width > player.x + shift;
+        }.sortedBy { -it.y }.map { player.y - it.y }.firstOrNull()
+
+        return if (obstacleDistance == null) {
+            10000.0
+        } else {
+            obstacleDistance
+        }
     }
 
     private fun detectCollisions() {
@@ -60,31 +81,37 @@ class GameEngine(val model: GameModel,
     private fun updatePlayer(player: Player, playerInput: PlayerInput): Unit {
 
         if(playerInput.accelerate) {
-            player.speedY = Math.max(player.speedY - 0.00005, -0.01)
+//            player.speedY = Math.max(player.speedY - 0.00005, -0.01)
+            player.speedY = -.01
         }
 
         if(playerInput.breaking) {
-            player.speedY = Math.min(player.speedY + 0.0001, 0.0)
+            player.speedY = 0.0
+//            player.speedY = Math.min(player.speedY + 0.0001, 0.0)
         }
 
         if(!playerInput.accelerate && !playerInput.breaking && player.speedY < 0) {
-            player.speedY = Math.min(player.speedY + 0.00002, 0.0)
+            player.speedY = 0.0
+//            player.speedY = Math.min(player.speedY + 0.00002, 0.0)
         }
 
         if(playerInput.turnLeft) {
-            player.speedX = Math.max(player.speedX - 0.00005, -0.01)
+            player.speedX = -.01
+//            player.speedX = Math.max(player.speedX - 0.00005, -0.01)
         }
 
         if(playerInput.turnRight) {
-            player.speedX = Math.min(player.speedX + 0.00005, 0.01)
+            player.speedX = .01
+//            player.speedX = Math.min(player.speedX + 0.00005, 0.01)
         }
 
         if(!playerInput.turnLeft && !playerInput.turnRight) {
-            if(player.speedX > 0) {
-                player.speedX = Math.max(player.speedX - 0.00002, 0.0)
-            } else if (player.speedX < 0) {
-                player.speedX = Math.min(player.speedX + 0.00002, 0.0)
-            }
+            player.speedX = 0.0;
+//            if(player.speedX > 0) {
+//                player.speedX = Math.max(player.speedX - 0.00002, 0.0)
+//            } else if (player.speedX < 0) {
+//                player.speedX = Math.min(player.speedX + 0.00002, 0.0)
+//            }
         }
 
         player.x += player.speedX
@@ -109,7 +136,7 @@ class GameEngine(val model: GameModel,
             }
         }
 
-        model.camera.y = topPlayer.y - 18
+        model.camera.y = topPlayer.y - 5
 
     }
 

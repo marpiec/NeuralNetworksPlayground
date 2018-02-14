@@ -30,6 +30,8 @@ class NeuralNetworkCopier {
     fun copy(network: NeuralNetwork): NeuralNetwork {
         return NeuralNetwork(copyNeuron(network.leftDistance),
                       copyNeuron(network.rightDistance),
+                      copyNeuron(network.frontLeftDistance),
+                      copyNeuron(network.frontRightDistance),
                       copyNeuron(network.accelerate),
                       copyNeuron(network.breaking),
                       copyNeuron(network.turnLeft),
@@ -65,15 +67,28 @@ class NeuralNetworkCopier {
 
 class NeuralNetwork(val leftDistance: Neuron = Neuron(0.0, arrayListOf(), true, 0.0),
                     val rightDistance: Neuron = Neuron(0.0, arrayListOf(), true, 0.0),
+                    val frontLeftDistance: Neuron = Neuron(0.0, arrayListOf(), true, 0.0),
+                    val frontRightDistance: Neuron = Neuron(0.0, arrayListOf(), true, 0.0),
                     val accelerate: Neuron = Neuron(0.0, arrayListOf(), true, 0.0),
                     val breaking: Neuron = Neuron(0.0, arrayListOf(), true, 0.0),
                     val turnLeft: Neuron = Neuron(0.0, arrayListOf(), true, 0.0),
                     val turnRight: Neuron = Neuron(0.0, arrayListOf(), true, 0.0),
-                    val inputs: MutableList<Neuron> = arrayListOf(leftDistance, rightDistance),
+                    val inputs: MutableList<Neuron> = arrayListOf(leftDistance, rightDistance, frontLeftDistance, frontRightDistance),
                     val outputs: MutableList<Neuron> = arrayListOf(accelerate, breaking, turnLeft, turnRight)) {
 
+
+    private fun neuronsLayer(count: Int): MutableList<Neuron> {
+        return IntRange(1, count).map { Neuron(0.0, mutableListOf(), true, 0.0) }.toMutableList()
+    }
+
     init {
-        interconnectAll(inputs, outputs)
+
+        val layerA = neuronsLayer(5)
+//        val layerB = neuronsLayer(5)
+
+        interconnectAll(inputs, layerA)
+//        interconnectAll(layerA, layerB)
+        interconnectAll(layerA, outputs)
     }
 
     private fun interconnectAll(inputs: MutableList<Neuron>, outputs: MutableList<Neuron>) {
@@ -86,7 +101,7 @@ class NeuralNetwork(val leftDistance: Neuron = Neuron(0.0, arrayListOf(), true, 
 
     }
 
-    fun setInputs(leftDistance: Double, rightDistance: Double) {
+    fun setInputs(leftDistance: Double, rightDistance: Double, frontLeftDistance: Double, frontRightDistance: Double) {
 
         clearNeurons(outputs)
 
@@ -94,6 +109,10 @@ class NeuralNetwork(val leftDistance: Neuron = Neuron(0.0, arrayListOf(), true, 
         this.leftDistance.notEvaluated = false;
         this.rightDistance.value = sigmoid(rightDistance + this.rightDistance.bias)
         this.rightDistance.notEvaluated = false;
+        this.frontLeftDistance.value = sigmoid(frontLeftDistance + this.frontLeftDistance.bias)
+        this.frontLeftDistance.notEvaluated = false;
+        this.frontRightDistance.value = sigmoid(frontRightDistance + this.frontRightDistance.bias)
+        this.frontRightDistance.notEvaluated = false;
     }
 
     private fun clearNeurons(neurons: List<Neuron>) {
@@ -136,7 +155,9 @@ class ArtificialIntelligence {
 
     fun init(players: Int) {
         for(p in 1..players) {
-            neuralNetworks[p] = NeuralNetwork()
+            val neuralNetwork = NeuralNetwork()
+            neuralNetwork.mutate()
+            neuralNetworks[p] = neuralNetwork
         }
     }
 
@@ -144,21 +165,36 @@ class ArtificialIntelligence {
     fun mutate(players: List<Player>) {
 
         val sorted = players.sortedBy { it.y }
-        val survivors = sorted.take(players.size / 2)
-        val rest = sorted.drop(players.size / 2)
+        val survivors = sorted.take(players.size / 4)
+        var rest = sorted.drop(players.size / 4)
+        val restA = rest.take(players.size / 4)
+        rest = rest.drop(players.size / 4)
+        val restB = rest.take(players.size / 4)
+        rest = rest.drop(players.size / 4)
+        val restC = rest.take(players.size / 4)
 
-        survivors.zip(rest).forEach { (survivor, nonSurvivor) ->
-            val network = NeuralNetworkCopier().copy(neuralNetworks.getValue(survivor.id))
-            network.mutate()
-            neuralNetworks[nonSurvivor.id] = network
+        println(survivors.map { it.id }.joinToString(", "))
+
+        survivors.zip(restA.zip(restB.zip(restC))).forEach { survivor ->
+            val networkA = NeuralNetworkCopier().copy(neuralNetworks.getValue(survivor.first.id))
+            val networkB = NeuralNetworkCopier().copy(neuralNetworks.getValue(survivor.first.id))
+            val networkC = NeuralNetworkCopier().copy(neuralNetworks.getValue(survivor.first.id))
+            networkA.mutate()
+            networkB.mutate()
+            networkC.mutate()
+            neuralNetworks[survivor.second.first.id] = networkA
+            neuralNetworks[survivor.second.second.first.id] = networkB
+            neuralNetworks[survivor.second.second.second.id] = networkC
         }
 
     }
 
-    fun getInputForPlayer(player: Player): PlayerInput {
+    fun getInputForPlayer(player: Player, perception: PlayerPerception): PlayerInput {
 
         val neuralNetwork = neuralNetworks.getValue(player.id)
-        neuralNetwork.setInputs((player.x - player.width) / 20, (20.0 - player.x - player.width) / 20)
+
+        neuralNetwork.setInputs(perception.leftDistance, perception.rightDistance, perception.frontLeftDistance, perception.frontRightDistance)
+
 
         return neuralNetwork.getOutput()
     }

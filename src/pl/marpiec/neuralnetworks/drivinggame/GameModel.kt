@@ -17,6 +17,8 @@ interface Obstacle : VisibleObject {
     fun toRectangle(): Rectangle
 }
 
+class PlayerPerception(val leftDistance: Double, val rightDistance: Double, val frontLeftDistance: Double, val frontRightDistance: Double)
+
 class Player(val id: Int,
              override var x: Double,
              override var y: Double,
@@ -58,7 +60,10 @@ class GameModel(var trackWidth: Double,
                 var camera: GameCamera) {
 
     companion object {
-        fun empty() = GameModel(20.0, mutableListOf(), mutableListOf(), GameCamera(0.0, 0.0, 20.0, 20.0))
+        fun empty(): GameModel {
+            val trackWidth = 20.0
+            return GameModel(trackWidth, mutableListOf(), mutableListOf(), GameCamera(0.0, 0.0, trackWidth, trackWidth))
+        }
     }
 
 
