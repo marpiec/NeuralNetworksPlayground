@@ -161,9 +161,9 @@ class NeuralNetwork(val speedX: Neuron = Neuron.empty(),
     private fun mutateNeurons(neurons: List<Neuron>) {
         neurons.forEach({ neuron ->
             if(neuron.notEvaluated) {
-                neuron.bias += (Math.random() - 0.5)
+                neuron.bias += neuron.bias * (1.0 + (Math.random() - 0.5) / 5) + (Math.random() - 0.5) / 2
                 neuron.inputs.forEach {axon ->
-                    axon.weight *= 1.0 + (Math.random() - 0.5) / 5
+                    axon.weight *= 1.0 + (Math.random() - 0.5) / 10
                 }
                 neuron.notEvaluated = false
                 mutateNeurons(neuron.inputs.map { it.input })

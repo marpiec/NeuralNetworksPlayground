@@ -42,7 +42,7 @@ class GameEngine(val model: GameModel,
 
         frame++
 
-        if(model.players.all { it.crashed } || frame > 5000) {
+        if(model.players.all { it.crashed } || frame > 7000) {
             onGameEnd()
             frame = 0
         }
