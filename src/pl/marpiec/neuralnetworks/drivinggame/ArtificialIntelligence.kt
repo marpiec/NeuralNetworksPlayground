@@ -23,18 +23,14 @@ class Neuron(var bias: Double,
 }
 
 
-class NeuralNetwork {
-
-    val leftDistance = Neuron(0.0, arrayListOf(), true, 0.0)
-    val rightDistance = Neuron(0.0, arrayListOf(), true, 0.0)
-
-    val accelerate = Neuron(0.0, arrayListOf(), true, 0.0)
-    val breaking = Neuron(0.0, arrayListOf(), true, 0.0)
-    val turnLeft = Neuron(0.0, arrayListOf(), true, 0.0)
-    val turnRight = Neuron(0.0, arrayListOf(), true, 0.0)
-
-    val inputs: ArrayList<Neuron> = arrayListOf(leftDistance, rightDistance)
-    val outputs: ArrayList<Neuron> = arrayListOf(accelerate, breaking, turnLeft, turnRight)
+class NeuralNetwork(val leftDistance: Neuron = Neuron(0.0, arrayListOf(), true, 0.0),
+                    val rightDistance: Neuron = Neuron(0.0, arrayListOf(), true, 0.0),
+                    val accelerate: Neuron = Neuron(0.0, arrayListOf(), true, 0.0),
+                    val breaking: Neuron = Neuron(0.0, arrayListOf(), true, 0.0),
+                    val turnLeft: Neuron = Neuron(0.0, arrayListOf(), true, 0.0),
+                    val turnRight: Neuron = Neuron(0.0, arrayListOf(), true, 0.0),
+                    val inputs: ArrayList<Neuron> = arrayListOf(leftDistance, rightDistance),
+                    val outputs: ArrayList<Neuron> = arrayListOf(accelerate, breaking, turnLeft, turnRight)) {
 
     init {
         interconnectAll(inputs, outputs)
@@ -105,7 +101,18 @@ class ArtificialIntelligence {
     }
 
 
-    fun mutate() {
+    fun mutate(players: List<Player>) {
+
+        val sorted = players.sortedBy { it.y }
+        val survivors = sorted.take(players.size / 2)
+        val rest = sorted.drop(players.size / 2)
+
+        survivors.zip(rest).forEach { (survivor, nonSurvivor) ->
+            val network = neuralNetworks.getValue(nonSurvivor.id)
+            network.mutate()
+        }
+
+
         neuralNetworks.forEach {it.value.mutate()}
     }
 
