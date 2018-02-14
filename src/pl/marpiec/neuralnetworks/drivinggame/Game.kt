@@ -8,7 +8,7 @@ import pl.marpiec.neuralnetworks.KeyboardState
 class Game(val canvas: Canvas,
            val keyboardState: KeyboardState) {
 
-    private val players = 20
+    private val players = 100
 
     private val model: GameModel = GameModel.empty()
     private val artificialIntelligence = ArtificialIntelligence()

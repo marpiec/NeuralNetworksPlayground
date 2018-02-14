@@ -104,7 +104,7 @@ class GameEngine(val model: GameModel,
         var topPlayer = model.players.first()
 
         model.players.forEach {
-            if(it.y > topPlayer.y) {
+            if(it.y < topPlayer.y) {
                 topPlayer = it
             }
         }
