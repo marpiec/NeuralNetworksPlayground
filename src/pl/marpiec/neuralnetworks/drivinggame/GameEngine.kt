@@ -6,6 +6,7 @@ class GameEngine(val model: GameModel,
                  val onGameEnd: () -> Unit) {
 
     var startTime: Long = 0
+    var frame: Long = 0
 
     fun nextFrame(now: Long): Unit {
 
@@ -23,9 +24,11 @@ class GameEngine(val model: GameModel,
 
         detectCollisions()
 
+        frame++
 
-        if(model.players.all { it.crashed }) {
+        if(model.players.all { it.crashed } || frame > 5000) {
             onGameEnd()
+            frame = 0
         }
 
     }

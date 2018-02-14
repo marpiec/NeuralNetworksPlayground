@@ -6,7 +6,7 @@ class Axon (var weight: Double,
             var input: Neuron)
 
 fun sigmoid(input: Double): Double {
-    return 1.0 / (1.0 + exp(-input))
+    return 2.0 / (1.0 + exp(-input)) - 1.0
 }
 
 class Neuron(var bias: Double,
@@ -83,9 +83,9 @@ class NeuralNetwork {
 
     private fun mutateNeurons(neurons: List<Neuron>) {
         neurons.forEach({ neuron ->
-            neuron.bias += (Math.random() - 0.5) * 5.0
+            neuron.bias += (Math.random() - 0.5)
             neuron.inputs.forEach {axon ->
-                axon.weight += (Math.random() - 0.5) * 5.0
+                axon.weight *= 1.0 + (Math.random() - 0.5) / 5
             }
             mutateNeurons(neuron.inputs.map { it.input })
         })
@@ -96,25 +96,26 @@ class NeuralNetwork {
 
 class ArtificialIntelligence {
 
-    var neuralNetwork = NeuralNetwork()
+    val neuralNetworks = mutableMapOf<Int, NeuralNetwork>()
 
-    fun init() {
-        neuralNetwork = NeuralNetwork()
-        neuralNetwork.mutate()
+    fun init(players: Int) {
+        for(p in 1..players) {
+            neuralNetworks.put(p, NeuralNetwork())
+        }
+    }
+
+
+    fun mutate() {
+        neuralNetworks.forEach {it.value.mutate()}
     }
 
     fun getInputForPlayer(player: Player): PlayerInput {
 
-        var counter = 0
-        do {
-            neuralNetwork.setInputs((player.x - player.width) / 20, (20.0 - player.x - player.width) / 20)
-            counter++
-        } while ((neuralNetwork.getOutput().allPressed()))
-
-        println(neuralNetwork.getOutput().accelerate.toString() + " "+neuralNetwork.getOutput().breaking)
+        val neuralNetwork = neuralNetworks.getValue(player.id)
+        neuralNetwork.setInputs((player.x - player.width) / 20, (20.0 - player.x - player.width) / 20)
 
         return neuralNetwork.getOutput()
-
     }
+
 
 }
