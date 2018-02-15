@@ -15,11 +15,11 @@ class GameEngine(val model: GameModel,
         model.players.filter { !it.crashed }.forEach {player ->
 
 
-            val distanceLeft = frontDistance(player.x - player.width / 2, player.y - player.length / 2)
-            val distanceRight = frontDistance(player.x + player.width / 2, player.y - player.length / 2)
+            val distanceLeft = frontDistance(player.x - player.width / 2, player.y + player.length / 2)
+            val distanceRight = frontDistance(player.x + player.width / 2, player.y + player.length / 2)
 
-            val distanceLeftLeft = frontDistance(player.x - player.width * 2, player.y)
-            val distanceRightRight = frontDistance(player.x + player.width * 2, player.y)
+            val distanceLeftLeft = frontDistance(player.x - player.width * 2, player.y + player.length / 2)
+            val distanceRightRight = frontDistance(player.x + player.width * 2, player.y + player.length / 2)
 
 //            val ortogonalDistance = ortogonalDistance(player.)
 

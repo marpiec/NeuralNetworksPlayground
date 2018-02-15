@@ -22,7 +22,7 @@ data class PlayerPerception(val speedX: Double, val speedY: Double,
                        val frontLeftDistance: Double, val frontRightDistance: Double,
                        val frontLeftOrtogonalDistance: Double, val frontRightOrtogonalDistance: Double)
 
-class Player(val id: Int,
+class Player(var id: Int,
              override var x: Double,
              override var y: Double,
              val width: Double,
