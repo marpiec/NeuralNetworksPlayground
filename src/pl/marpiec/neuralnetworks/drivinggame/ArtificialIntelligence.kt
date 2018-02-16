@@ -47,12 +47,11 @@ class NeuralNetworkCopier {
         return NeuralNetwork(
                       copyNeuron(network.speedX),
                       copyNeuron(network.speedY),
-                      copyNeuron(network.leftDistance),
-                      copyNeuron(network.rightDistance),
-                      copyNeuron(network.frontLeftDistance),
-                      copyNeuron(network.frontRightDistance),
-                      copyNeuron(network.frontLeftOrtogonalDistance),
-                      copyNeuron(network.frontRightOrtogonalDistance),
+                      copyNeuron(network.perception3),
+                      copyNeuron(network.perception4),
+                      copyNeuron(network.perception5),
+                      copyNeuron(network.perception6),
+                      copyNeuron(network.perception7),
                       copyNeuron(network.accelerate),
                       copyNeuron(network.breaking),
                       copyNeuron(network.turnLeft),
@@ -88,17 +87,16 @@ class NeuralNetworkCopier {
 
 class NeuralNetwork(val speedX: Neuron = Neuron.empty(),
                     val speedY: Neuron = Neuron.empty(),
-                    val leftDistance: Neuron = Neuron.empty(),
-                    val rightDistance: Neuron = Neuron.empty(),
-                    val frontLeftDistance: Neuron = Neuron.empty(),
-                    val frontRightDistance: Neuron = Neuron.empty(),
-                    val frontLeftOrtogonalDistance: Neuron = Neuron.empty(),
-                    val frontRightOrtogonalDistance: Neuron = Neuron.empty(),
+                    val perception3: Neuron = Neuron.empty(),
+                    val perception4: Neuron = Neuron.empty(),
+                    val perception5: Neuron = Neuron.empty(),
+                    val perception6: Neuron = Neuron.empty(),
+                    val perception7: Neuron = Neuron.empty(),
                     val accelerate: Neuron = Neuron.empty(),
                     val breaking: Neuron = Neuron.empty(),
                     val turnLeft: Neuron = Neuron.empty(),
                     val turnRight: Neuron = Neuron.empty(),
-                    val inputs: ArrayList<Neuron> = arrayListOf(speedX, speedY, leftDistance, rightDistance, frontLeftDistance, frontRightDistance, frontLeftOrtogonalDistance, frontRightOrtogonalDistance),
+                    val inputs: ArrayList<Neuron> = arrayListOf(speedX, speedY, perception3, perception4, perception5, perception6, perception7),
                     val outputs: ArrayList<Neuron> = arrayListOf(accelerate, breaking, turnLeft, turnRight)) {
 
     private val random = Random()
@@ -133,12 +131,11 @@ class NeuralNetwork(val speedX: Neuron = Neuron.empty(),
 
         this.speedX.forceValue(perception.speedX)
         this.speedY.forceValue(perception.speedY)
-//        this.leftDistance.forceValue(perception.leftDistance)
-//        this.rightDistance.forceValue(perception.rightDistance)
-//        this.frontLeftDistance.forceValue(perception.frontLeftDistance)
-//        this.frontRightDistance.forceValue(perception.frontRightDistance)
-//        this.frontLeftOrtogonalDistance.forceValue(perception.frontLeftOrtogonalDistance)
-//        this.frontRightOrtogonalDistance.forceValue(perception.frontRightOrtogonalDistance)
+        this.perception3.forceValue(perception.distances[3])
+        this.perception4.forceValue(perception.distances[4])
+        this.perception5.forceValue(perception.distances[5])
+        this.perception6.forceValue(perception.distances[6])
+        this.perception7.forceValue(perception.distances[7])
     }
 
     private fun clearNeurons(neurons: ArrayList<Neuron>) {

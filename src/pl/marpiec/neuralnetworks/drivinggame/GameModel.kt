@@ -40,7 +40,7 @@ class Player(var id: Int,
         val player = listOf(
                 DrawableRectangle(-width / 2.0, -length / 2.0, width, length, Color.BLUE, if (crashed) Color.RED else Color.GREEN, 0.0)
         )
-
+//        return player
         val p = perception.distances.mapIndexed { index, distance ->
             DrawableRectangle(Math.sin(Math.PI * 2.0 / 8.0 * index) * distance,  Math.cos(Math.PI * 2.0 / 8.0 * index) * distance, 0.2, 0.2, Color.YELLOW, Color.YELLOW, 0.0)
         }

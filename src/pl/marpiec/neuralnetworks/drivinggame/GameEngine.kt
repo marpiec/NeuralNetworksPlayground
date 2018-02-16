@@ -10,9 +10,7 @@ class GameEngine(val model: GameModel,
 
     val segments = 8
 
-    fun nextFrame(now: Long, delta: Long): Unit {
-
-
+    fun nextFrame(delta: Long): Unit {
 
         model.players.filter { !it.crashed }.forEach {player ->
 
@@ -44,14 +42,6 @@ class GameEngine(val model: GameModel,
             }
 
 
-//            val distanceLeft = frontDistance(player.x - player.width / 2, player.y + player.length / 2)
-//            val distanceRight = frontDistance(player.x + player.width / 2, player.y + player.length / 2)
-//
-//            val distanceLeftLeft = frontDistance(player.x - player.width * 2, player.y + player.length / 2)
-//            val distanceRightRight = frontDistance(player.x + player.width * 2, player.y + player.length / 2)
-
-//            val ortogonalDistance = ortogonalDistance(player.)
-
             val perception = PlayerPerception(player.speedX, player.speedY, distances)
 
             player.perception = perception
@@ -63,19 +53,20 @@ class GameEngine(val model: GameModel,
         }
 
         model.obstacles.forEach { when(it) {
-            is RectangularObstacle -> updateRectangularObstacle(it, now)
+            is RectangularObstacle -> updateRectangularObstacle(it)
         }}
 
         updateCamera()
 
         detectCollisions()
 
-        frame++
+        frame+= delta
 
-        if(model.players.all { it.crashed } || frame > 7000) {
+        if(model.players.all { it.crashed } || frame > 8000) {
             onGameEnd()
             frame = 0
         }
+
 
     }
 
@@ -120,7 +111,7 @@ class GameEngine(val model: GameModel,
 
     }
 
-    private fun updateRectangularObstacle(o: RectangularObstacle, now: Long): Unit {
+    private fun updateRectangularObstacle(o: RectangularObstacle): Unit {
 //    val cycle = (now - startTime).toDouble / 1000.0 * Math.PI
         // Do nothing
     }
@@ -128,10 +119,11 @@ class GameEngine(val model: GameModel,
     private fun updatePlayer(player: Player, playerInput: PlayerInput, delta: Long): Unit {
 
         val inertion = true
+        val maxSpeedY = 0.01
 
         if(inertion) {
             if(playerInput.accelerate) {
-                player.speedY = Math.max(player.speedY - 0.00003 * delta, -0.01)
+                player.speedY = Math.max(player.speedY - 0.00003 * delta, -maxSpeedY)
             }
 
             if(playerInput.breaking) {
@@ -143,11 +135,11 @@ class GameEngine(val model: GameModel,
 //            }
 
             if(playerInput.turnLeft) {
-            player.speedX = Math.max(player.speedX - 0.0002* delta, -0.01)
+            player.speedX = Math.max(player.speedX - 0.0002* delta, -maxSpeedY)
             }
 
             if(playerInput.turnRight) {
-            player.speedX = Math.min(player.speedX + 0.0002* delta, 0.01)
+            player.speedX = Math.min(player.speedX + 0.0002* delta, maxSpeedY)
             }
 
             if(!playerInput.turnLeft && !playerInput.turnRight) {
@@ -159,7 +151,7 @@ class GameEngine(val model: GameModel,
             }
         } else {
             if(playerInput.accelerate) {
-                player.speedY = Math.max(player.speedY - 0.00005 * delta, -0.01)
+                player.speedY = Math.max(player.speedY - 0.00005 * delta, -maxSpeedY)
 //                player.speedY = -.01
             }
 
@@ -174,11 +166,11 @@ class GameEngine(val model: GameModel,
 //            }
 
             if(playerInput.turnLeft) {
-                player.speedX = -.01
+                player.speedX = -.01 / delta
             }
 
             if(playerInput.turnRight) {
-                player.speedX = .01
+                player.speedX = .01 / delta
             }
 
             if(!playerInput.turnLeft && !playerInput.turnRight) {
@@ -186,7 +178,6 @@ class GameEngine(val model: GameModel,
             }
         }
 
-        player.speedY = -0.001
 
         player.x += player.speedX * delta
         player.y += player.speedY * delta

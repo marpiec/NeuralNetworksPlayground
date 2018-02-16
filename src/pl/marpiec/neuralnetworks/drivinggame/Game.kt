@@ -8,7 +8,7 @@ import pl.marpiec.neuralnetworks.KeyboardState
 class Game(val canvas: Canvas,
            val keyboardState: KeyboardState) {
 
-    private val players = 1
+    private val players = 100
 
     private val model: GameModel = GameModel.empty()
     private val artificialIntelligence = ArtificialIntelligence()
@@ -37,7 +37,7 @@ class Game(val canvas: Canvas,
         engine.startTime = startTime
         lastFrameTime = startTime
 
-//
+
 //        for(i in 1..40000) {
 //            val currentTime = System.currentTimeMillis()
 //            nextFrame(currentTime, 1)
@@ -56,7 +56,7 @@ class Game(val canvas: Canvas,
     private fun initGame(): Unit {
 
 
-//        artificialIntelligence.mutate(model.players)
+        artificialIntelligence.mutate(model.players)
 
         val obs: ArrayList<Double> = arrayListOf(5.0, 13.0, 8.0, 2.0 ,18.5, 8.0, 16.0, 4.0, 5.0, 11.0, 1.5, 8.0, 16.0, 4.0, 2.0,18.5, 15.0, 14.0, 4.0, 2.0, 10.0, 5.0, 15.0, 7.0,18.5, 12.0, 7.0, 13.0, 11.0)
 
@@ -72,13 +72,23 @@ class Game(val canvas: Canvas,
 
     }
 
+    var last = 0L
 
     private fun nextFrame(currentTime: Long, timeDelta: Long): Unit {
-        var i = 0
-        while(i < timeDelta * 2) {
-            engine.nextFrame(currentTime, 1)
-            i += 1
+
+        if(last == 0L) {
+            last = startTime
         }
+
+        val diff = (currentTime - last) / 20
+
+        var i = 0
+        while(i < diff) {
+            engine.nextFrame(20L)
+            i++
+        }
+        last += i * 20
+
         painter.paint()
     }
 
