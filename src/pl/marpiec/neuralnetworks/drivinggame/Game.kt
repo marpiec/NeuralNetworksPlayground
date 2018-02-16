@@ -35,15 +35,12 @@ class Game(val canvas: Canvas,
         initGame()
         startTime = System.currentTimeMillis()
         engine.startTime = startTime
-        lastFrameTime = startTime
 
-
-//        for(i in 1..40000) {
-//            val currentTime = System.currentTimeMillis()
-//            nextFrame(currentTime, 1)
-//            lastFrameTime = currentTime
-//        }
-//        println("Initialization in " + (System.currentTimeMillis() - startTime))
+        for(i in 1..10000) {
+            engine.nextFrame(20L)
+        }
+        lastFrameTime = System.currentTimeMillis()
+        println("Initialization in " + (System.currentTimeMillis() - startTime))
 
 
         animationTimer.start()
