@@ -8,7 +8,7 @@ import pl.marpiec.neuralnetworks.KeyboardState
 class Game(val canvas: Canvas,
            val keyboardState: KeyboardState) {
 
-    private val players = 100
+    private val players = 50
 
     private val model: GameModel = GameModel.empty()
     private val artificialIntelligence = ArtificialIntelligence()
@@ -20,6 +20,8 @@ class Game(val canvas: Canvas,
 
     private var startTime: Long = 0
     private var lastFrameTime: Long = 0
+
+    private var generation = 1
 
     private val animationTimer = object : AnimationTimer() {
         override fun handle(now: Long): Unit {
@@ -36,11 +38,11 @@ class Game(val canvas: Canvas,
         startTime = System.currentTimeMillis()
         engine.startTime = startTime
 
-        for(i in 1..10000) {
-            engine.nextFrame(20L)
-        }
-        lastFrameTime = System.currentTimeMillis()
-        println("Initialization in " + (System.currentTimeMillis() - startTime))
+//        for(i in 1..20000) {
+//            engine.nextFrame(20L)
+//        }
+//        lastFrameTime = System.currentTimeMillis()
+//        println("Initialization in " + (System.currentTimeMillis() - startTime))
 
 
         animationTimer.start()
@@ -52,10 +54,11 @@ class Game(val canvas: Canvas,
 
     private fun initGame(): Unit {
 
+        generation++
+        artificialIntelligence.mutate(model.players, generation)
 
-        artificialIntelligence.mutate(model.players)
 
-        val obs: ArrayList<Double> = arrayListOf(5.0, 13.0, 8.0, 2.0 ,18.5, 8.0, 16.0, 4.0, 5.0, 11.0, 1.5, 8.0, 16.0, 4.0, 2.0,18.5, 15.0, 14.0, 4.0, 2.0, 10.0, 5.0, 15.0, 7.0,18.5, 12.0, 7.0, 13.0, 11.0)
+        val obs: ArrayList<Double> = arrayListOf(5.0, 13.0, 8.0, 2.0 ,18.5, 8.0, 16.0, 4.0, 5.0, 11.0, 1.5, 8.0, 16.0, 4.0, 2.0, 11.0,18.5, 15.0, 14.0, 4.0, 2.0, 10.0, 5.0, 15.0, 7.0,18.5, 12.0, 7.0, 13.0, 11.0)
 
         model.clear()
 

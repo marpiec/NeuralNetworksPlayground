@@ -45,8 +45,8 @@ class NeuralNetworkCopier {
 
     fun copy(network: NeuralNetwork): NeuralNetwork {
         return NeuralNetwork(
-                      copyNeuron(network.speedX),
-                      copyNeuron(network.speedY),
+                      copyNeuron(network.speed),
+                      copyNeuron(network.rotation),
                       copyNeuron(network.perception3),
                       copyNeuron(network.perception4),
                       copyNeuron(network.perception5),
@@ -85,8 +85,8 @@ class NeuralNetworkCopier {
 }
 
 
-class NeuralNetwork(val speedX: Neuron = Neuron.empty(),
-                    val speedY: Neuron = Neuron.empty(),
+class NeuralNetwork(val speed: Neuron = Neuron.empty(),
+                    val rotation: Neuron = Neuron.empty(),
                     val perception3: Neuron = Neuron.empty(),
                     val perception4: Neuron = Neuron.empty(),
                     val perception5: Neuron = Neuron.empty(),
@@ -96,7 +96,7 @@ class NeuralNetwork(val speedX: Neuron = Neuron.empty(),
                     val breaking: Neuron = Neuron.empty(),
                     val turnLeft: Neuron = Neuron.empty(),
                     val turnRight: Neuron = Neuron.empty(),
-                    val inputs: ArrayList<Neuron> = arrayListOf(speedX, speedY, perception3, perception4, perception5, perception6, perception7),
+                    val inputs: ArrayList<Neuron> = arrayListOf(speed, rotation, perception3, perception4, perception5, perception6, perception7),
                     val outputs: ArrayList<Neuron> = arrayListOf(accelerate, breaking, turnLeft, turnRight)) {
 
     private val random = Random()
@@ -129,8 +129,8 @@ class NeuralNetwork(val speedX: Neuron = Neuron.empty(),
 
         clearNeurons(outputs)
 
-        this.speedX.forceValue(perception.speedX)
-        this.speedY.forceValue(perception.speedY)
+        this.speed.forceValue(perception.speed)
+        this.rotation.forceValue(perception.rotation)
         this.perception3.forceValue(perception.distances[3])
         this.perception4.forceValue(perception.distances[4])
         this.perception5.forceValue(perception.distances[5])
@@ -197,7 +197,7 @@ class ArtificialIntelligence {
     }
 
 
-    fun mutate(players: ArrayList<Player>) {
+    fun mutate(players: ArrayList<Player>, generation: Int) {
         val start = System.currentTimeMillis()
 
         val sorted = players.sortedBy { it.y }
@@ -214,10 +214,18 @@ class ArtificialIntelligence {
             counter++
         }
 
+
         rest.forEach { r ->
             r.id = counter
-            neuralNetworks[counter] = if(counter + survivorsCount <= players.size) {
-                NeuralNetworkCopier().copy(neuralNetworks.getValue(counter % survivorsCount + 1)).mutate()
+            neuralNetworks[counter] = if(counter + survivorsCount <= players.size || true) {
+
+                var c = survivorsCount
+                val rand = Math.random() - (1.0 / (c + 1))
+                while(rand > 1.0 / c) {
+                    c--
+                }
+
+                NeuralNetworkCopier().copy(neuralNetworks.getValue(c)).mutate()
             } else {
                 NeuralNetwork().mutate()
             }
@@ -226,7 +234,7 @@ class ArtificialIntelligence {
         }
 
         if(survivors.isNotEmpty()) {
-            println("Mutation took " + (System.currentTimeMillis() - start)+" millis, best player " + (-survivors.first().y))
+            println("Generation " + generation+" mutation took " + (System.currentTimeMillis() - start)+" millis, best player " + (-survivors.first().y))
         }
 
 

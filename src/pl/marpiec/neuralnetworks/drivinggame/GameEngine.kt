@@ -25,8 +25,8 @@ class GameEngine(val model: GameModel,
                 val distance = Math.sqrt(xDiff * xDiff + yDiff * yDiff)
 
                 val bucket: Int = if(yDiff != 0.0) {
-                    val arcTan = Math.toDegrees(Math.atan2(xDiff, yDiff))
-                    val b1 = ((arcTan + 360 / 16) + 360) / (360 / 8)
+                    val arcTan = Math.toDegrees(Math.atan2(xDiff, yDiff) - player.rotation)
+                    val b1 = ((arcTan + 360 / 16) + 360 * 10) / (360 / 8)
                     b1.toInt() % 8
                 } else {
                     if(xDiff > 0) {
@@ -42,7 +42,7 @@ class GameEngine(val model: GameModel,
             }
 
 
-            val perception = PlayerPerception(player.speedX, player.speedY, distances)
+            val perception = PlayerPerception(player.speed, player.rotation, distances)
 
             player.perception = perception
 
@@ -62,7 +62,7 @@ class GameEngine(val model: GameModel,
 
         frame+= delta
 
-        if(model.players.all { it.crashed } || frame > 8000) {
+        if(model.players.all { it.crashed } || frame > 5000) {
             onGameEnd()
             frame = 0
         }
@@ -118,69 +118,31 @@ class GameEngine(val model: GameModel,
 
     private fun updatePlayer(player: Player, playerInput: PlayerInput, delta: Long): Unit {
 
-        val inertion = true
         val maxSpeedY = 0.01
 
-        if(inertion) {
-            if(playerInput.accelerate) {
-                player.speedY = Math.max(player.speedY - 0.00003 * delta, -maxSpeedY)
-            }
+        if(playerInput.accelerate) {
+            player.speed = Math.max(player.speed - 0.00001 * delta, -maxSpeedY)
+        }
 
-            if(playerInput.breaking) {
-            player.speedY = Math.min(player.speedY + 0.0001* delta, 0.0)
-            }
+        if(playerInput.breaking) {
+           player.speed = Math.min(player.speed + 0.0001 * delta, 0.0)
+        }
 
 //            if(!playerInput.accelerate && !playerInput.breaking && player.speedY < 0) {
 //            player.speedY = Math.min(player.speedY + 0.00002* delta, 0.0)
 //            }
 
-            if(playerInput.turnLeft) {
-            player.speedX = Math.max(player.speedX - 0.0002* delta, -maxSpeedY)
-            }
+        if(playerInput.turnLeft) {
+            player.rotation = (player.rotation - 0.005* delta + Math.PI * 2) % (Math.PI * 2)
+        }
 
-            if(playerInput.turnRight) {
-            player.speedX = Math.min(player.speedX + 0.0002* delta, maxSpeedY)
-            }
-
-            if(!playerInput.turnLeft && !playerInput.turnRight) {
-                if(player.speedX > 0) {
-                    player.speedX = Math.max(player.speedX - 0.00002* delta, 0.0)
-                } else if (player.speedX < 0) {
-                    player.speedX = Math.min(player.speedX + 0.00002* delta, 0.0)
-                }
-            }
-        } else {
-            if(playerInput.accelerate) {
-                player.speedY = Math.max(player.speedY - 0.00005 * delta, -maxSpeedY)
-//                player.speedY = -.01
-            }
-
-            if(playerInput.breaking) {
-//                player.speedY = 0.0
-                player.speedY = Math.min(player.speedY + 0.0001* delta, 0.0)
-            }
-
-//            if(!playerInput.accelerate && !playerInput.breaking) {
-//                player.speedY = 0.0
-//                player.speedY = Math.min(player.speedY + 0.00002* delta, 0.0)
-//            }
-
-            if(playerInput.turnLeft) {
-                player.speedX = -.01 / delta
-            }
-
-            if(playerInput.turnRight) {
-                player.speedX = .01 / delta
-            }
-
-            if(!playerInput.turnLeft && !playerInput.turnRight) {
-                player.speedX = 0.0;
-            }
+        if(playerInput.turnRight) {
+            player.rotation = (player.rotation + 0.005* delta + Math.PI * 2) % (Math.PI * 2)
         }
 
 
-        player.x += player.speedX * delta
-        player.y += player.speedY * delta
+        player.x -= player.speed * Math.sin(player.rotation) * delta
+        player.y += player.speed * Math.cos(player.rotation) * delta
 
     }
 

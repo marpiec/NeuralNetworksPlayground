@@ -17,7 +17,7 @@ interface Obstacle : VisibleObject {
     fun toRectangle(): Rectangle
 }
 
-data class PlayerPerception(val speedX: Double, val speedY: Double, val distances: Array<Double>) {
+data class PlayerPerception(val speed: Double, val rotation: Double, val distances: Array<Double>) {
     companion object {
         fun empty(): PlayerPerception {
             return PlayerPerception(0.0, 0.0, arrayOf(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0))
@@ -30,19 +30,19 @@ class Player(var id: Int,
              override var y: Double,
              val width: Double,
              val length: Double,
-             var speedX: Double,
-             var speedY: Double,
+             var speed: Double,
+             var rotation: Double,
              var crashed: Boolean,
              var perception: PlayerPerception
              ) : VisibleObject {
 
     override fun viewModel(): Iterable<Drawable> {
         val player = listOf(
-                DrawableRectangle(-width / 2.0, -length / 2.0, width, length, Color.BLUE, if (crashed) Color.RED else Color.GREEN, 0.0)
+                DrawableRectangle(-width / 2.0, -length / 2.0, width, length, Color.BLUE, if (crashed) Color.RED else Color.GREEN, rotation)
         )
 //        return player
         val p = perception.distances.mapIndexed { index, distance ->
-            DrawableRectangle(Math.sin(Math.PI * 2.0 / 8.0 * index) * distance,  Math.cos(Math.PI * 2.0 / 8.0 * index) * distance, 0.2, 0.2, Color.YELLOW, Color.YELLOW, 0.0)
+            DrawableRectangle(Math.sin(Math.PI * 2.0 / 8.0 * index + rotation) * distance,  Math.cos(Math.PI * 2.0 / 8.0 * index + rotation) * distance, 0.2, 0.2, Color.YELLOW, Color.YELLOW, 0.0)
         }
 
         return p.plus(player)
