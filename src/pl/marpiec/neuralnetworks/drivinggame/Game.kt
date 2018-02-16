@@ -8,7 +8,7 @@ import pl.marpiec.neuralnetworks.KeyboardState
 class Game(val canvas: Canvas,
            val keyboardState: KeyboardState) {
 
-    private val players = 20
+    private val players = 1
 
     private val model: GameModel = GameModel.empty()
     private val artificialIntelligence = ArtificialIntelligence()
@@ -56,9 +56,9 @@ class Game(val canvas: Canvas,
     private fun initGame(): Unit {
 
 
-        artificialIntelligence.mutate(model.players)
+//        artificialIntelligence.mutate(model.players)
 
-        val obs: List<Double> = listOf(5.0, 13.0, 8.0, 2.0 ,18.5, 8.0, 16.0, 4.0, 5.0, 11.0, 1.5, 8.0, 16.0, 4.0, 2.0,18.5, 15.0, 14.0, 4.0, 2.0, 10.0, 5.0, 15.0, 7.0,18.5, 12.0, 7.0, 13.0, 11.0)
+        val obs: ArrayList<Double> = arrayListOf(5.0, 13.0, 8.0, 2.0 ,18.5, 8.0, 16.0, 4.0, 5.0, 11.0, 1.5, 8.0, 16.0, 4.0, 2.0,18.5, 15.0, 14.0, 4.0, 2.0, 10.0, 5.0, 15.0, 7.0,18.5, 12.0, 7.0, 13.0, 11.0)
 
         model.clear()
 
@@ -67,7 +67,7 @@ class Game(val canvas: Canvas,
         }
 
         for (p in 1..players) {
-            model.addPlayer(Player(p, 7.0, 0.0, 0.6, 1.4, 0.0, 0.0, false))
+            model.addPlayer(Player(p, 7.0, 0.0, 0.6, 1.4, 0.0, 0.0, false, PlayerPerception.empty()))
         }
 
     }

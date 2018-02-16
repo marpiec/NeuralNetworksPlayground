@@ -17,10 +17,13 @@ interface Obstacle : VisibleObject {
     fun toRectangle(): Rectangle
 }
 
-data class PlayerPerception(val speedX: Double, val speedY: Double,
-                        val leftDistance: Double, val rightDistance: Double,
-                       val frontLeftDistance: Double, val frontRightDistance: Double,
-                       val frontLeftOrtogonalDistance: Double, val frontRightOrtogonalDistance: Double)
+data class PlayerPerception(val speedX: Double, val speedY: Double, val distances: Array<Double>) {
+    companion object {
+        fun empty(): PlayerPerception {
+            return PlayerPerception(0.0, 0.0, arrayOf(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0))
+        }
+    }
+}
 
 class Player(var id: Int,
              override var x: Double,
@@ -29,11 +32,22 @@ class Player(var id: Int,
              val length: Double,
              var speedX: Double,
              var speedY: Double,
-             var crashed: Boolean) : VisibleObject {
+             var crashed: Boolean,
+             var perception: PlayerPerception
+             ) : VisibleObject {
 
-    override fun viewModel() = listOf(
-        DrawableRectangle(-width / 2.0, -length / 2.0, width, length, Color.BLUE, if(crashed) Color.RED else Color.GREEN, 0.0)
-    )
+    override fun viewModel(): Iterable<Drawable> {
+        val player = listOf(
+                DrawableRectangle(-width / 2.0, -length / 2.0, width, length, Color.BLUE, if (crashed) Color.RED else Color.GREEN, 0.0)
+        )
+
+        val p = perception.distances.mapIndexed { index, distance ->
+            DrawableRectangle(Math.sin(Math.PI * 2.0 / 8.0 * index) * distance,  Math.cos(Math.PI * 2.0 / 8.0 * index) * distance, 0.2, 0.2, Color.YELLOW, Color.YELLOW, 0.0)
+        }
+
+        return p.plus(player)
+    }
+
 
     fun toRectangle() = Rectangle(x-width / 2.0, y-length/ 2.0, width, length)
 }
@@ -58,14 +72,14 @@ class GameCamera(var x: Double,
 
 
 class GameModel(var trackWidth: Double,
-                val players: MutableList<Player>,
-                val obstacles: MutableList<Obstacle>,
+                val players: ArrayList<Player>,
+                val obstacles: ArrayList<Obstacle>,
                 var camera: GameCamera) {
 
     companion object {
         fun empty(): GameModel {
             val trackWidth = 20.0
-            return GameModel(trackWidth, mutableListOf(), mutableListOf(), GameCamera(0.0, 0.0, trackWidth, trackWidth))
+            return GameModel(trackWidth, arrayListOf(), arrayListOf(), GameCamera(0.0, 0.0, trackWidth, trackWidth))
         }
     }
 

@@ -11,7 +11,7 @@ fun sigmoid(input: Double): Double {
 }
 
 class Neuron(var bias: Double,
-             var inputs: MutableList<Axon>,
+             var inputs: ArrayList<Axon>,
              var notEvaluated: Boolean,
              var value: Double) {
 
@@ -57,14 +57,14 @@ class NeuralNetworkCopier {
                       copyNeuron(network.breaking),
                       copyNeuron(network.turnLeft),
                       copyNeuron(network.turnRight),
-                      network.inputs.map {copyNeuron(it)}.toMutableList(),
-                      network.outputs.map {copyNeuron(it)}.toMutableList())
+                      network.inputs.mapTo(arrayListOf()) {copyNeuron(it)},
+                      network.outputs.mapTo(arrayListOf()) {copyNeuron(it)})
     }
 
     private fun copyNeuron(neuron: Neuron): Neuron {
         val cached = neurons[neuron]
         return if(cached == null) {
-            val neuronCopy = Neuron(neuron.bias, neuron.inputs.map { copyAxon(it) }.toMutableList(), neuron.notEvaluated, neuron.value)
+            val neuronCopy = Neuron(neuron.bias, neuron.inputs.mapTo(arrayListOf()) { copyAxon(it) }, neuron.notEvaluated, neuron.value)
             neurons[neuron] = neuronCopy
             return neuronCopy
         } else {
@@ -98,13 +98,13 @@ class NeuralNetwork(val speedX: Neuron = Neuron.empty(),
                     val breaking: Neuron = Neuron.empty(),
                     val turnLeft: Neuron = Neuron.empty(),
                     val turnRight: Neuron = Neuron.empty(),
-                    val inputs: MutableList<Neuron> = arrayListOf(speedX, speedY, leftDistance, rightDistance, frontLeftDistance, frontRightDistance, frontLeftOrtogonalDistance, frontRightOrtogonalDistance),
-                    val outputs: MutableList<Neuron> = arrayListOf(accelerate, breaking, turnLeft, turnRight)) {
+                    val inputs: ArrayList<Neuron> = arrayListOf(speedX, speedY, leftDistance, rightDistance, frontLeftDistance, frontRightDistance, frontLeftOrtogonalDistance, frontRightOrtogonalDistance),
+                    val outputs: ArrayList<Neuron> = arrayListOf(accelerate, breaking, turnLeft, turnRight)) {
 
     private val random = Random()
 
-    private fun neuronsLayer(count: Int): MutableList<Neuron> {
-        return IntRange(1, count).map { Neuron(0.0, mutableListOf(), true, 0.0) }.toMutableList()
+    private fun neuronsLayer(count: Int): ArrayList<Neuron> {
+        return IntRange(1, count).mapTo(arrayListOf()) { Neuron(0.0, arrayListOf(), true, 0.0) }
     }
 
     init {
@@ -117,7 +117,7 @@ class NeuralNetwork(val speedX: Neuron = Neuron.empty(),
         interconnectAll(layerA, outputs)
     }
 
-    private fun interconnectAll(inputs: MutableList<Neuron>, outputs: MutableList<Neuron>) {
+    private fun interconnectAll(inputs: ArrayList<Neuron>, outputs: ArrayList<Neuron>) {
 
         for (input in inputs) {
             for (output in outputs) {
@@ -133,19 +133,19 @@ class NeuralNetwork(val speedX: Neuron = Neuron.empty(),
 
         this.speedX.forceValue(perception.speedX)
         this.speedY.forceValue(perception.speedY)
-        this.leftDistance.forceValue(perception.leftDistance)
-        this.rightDistance.forceValue(perception.rightDistance)
-        this.frontLeftDistance.forceValue(perception.frontLeftDistance)
-        this.frontRightDistance.forceValue(perception.frontRightDistance)
-        this.frontLeftOrtogonalDistance.forceValue(perception.frontLeftOrtogonalDistance)
-        this.frontRightOrtogonalDistance.forceValue(perception.frontRightOrtogonalDistance)
+//        this.leftDistance.forceValue(perception.leftDistance)
+//        this.rightDistance.forceValue(perception.rightDistance)
+//        this.frontLeftDistance.forceValue(perception.frontLeftDistance)
+//        this.frontRightDistance.forceValue(perception.frontRightDistance)
+//        this.frontLeftOrtogonalDistance.forceValue(perception.frontLeftOrtogonalDistance)
+//        this.frontRightOrtogonalDistance.forceValue(perception.frontRightOrtogonalDistance)
     }
 
-    private fun clearNeurons(neurons: List<Neuron>) {
+    private fun clearNeurons(neurons: ArrayList<Neuron>) {
        neurons.forEach {neuron ->
            neuron.value = 0.0
            neuron.notEvaluated = true;
-           clearNeurons(neuron.inputs.map {it.input})
+           clearNeurons(neuron.inputs.mapTo(arrayListOf()) {it.input})
        }
     }
 
@@ -169,7 +169,7 @@ class NeuralNetwork(val speedX: Neuron = Neuron.empty(),
         return this
     }
 
-    private fun mutateNeurons(neurons: List<Neuron>) {
+    private fun mutateNeurons(neurons: ArrayList<Neuron>) {
         neurons.forEach({ neuron ->
             if(neuron.notEvaluated) {
                 if(Math.random() < 0.2) {
@@ -179,7 +179,7 @@ class NeuralNetwork(val speedX: Neuron = Neuron.empty(),
                     }
                 }
                 neuron.notEvaluated = false
-                mutateNeurons(neuron.inputs.map { it.input })
+                mutateNeurons(neuron.inputs.mapTo(arrayListOf()) { it.input })
             }
         })
     }
@@ -200,7 +200,7 @@ class ArtificialIntelligence {
     }
 
 
-    fun mutate(players: List<Player>) {
+    fun mutate(players: ArrayList<Player>) {
         val start = System.currentTimeMillis()
 
         val sorted = players.sortedBy { it.y }

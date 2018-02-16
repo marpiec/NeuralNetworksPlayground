@@ -8,6 +8,8 @@ class GameEngine(val model: GameModel,
     var startTime: Long = 0
     var frame: Long = 0
 
+    val segments = 8
+
     fun nextFrame(now: Long, delta: Long): Unit {
 
 
@@ -15,16 +17,44 @@ class GameEngine(val model: GameModel,
         model.players.filter { !it.crashed }.forEach {player ->
 
 
-            val distanceLeft = frontDistance(player.x - player.width / 2, player.y + player.length / 2)
-            val distanceRight = frontDistance(player.x + player.width / 2, player.y + player.length / 2)
+            val distances: Array<Double> = arrayOf(Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE,
+                                                   Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE) // 8 directions, clockwise
 
-            val distanceLeftLeft = frontDistance(player.x - player.width * 2, player.y + player.length / 2)
-            val distanceRightRight = frontDistance(player.x + player.width * 2, player.y + player.length / 2)
+            model.obstacles.forEach { obstacle ->
+
+                val xDiff = obstacle.x - player.x
+                val yDiff = obstacle.y - player.y
+                val distance = Math.sqrt(xDiff * xDiff + yDiff * yDiff)
+
+                val bucket: Int = if(yDiff != 0.0) {
+                    val arcTan = Math.toDegrees(Math.atan2(xDiff, yDiff))
+                    val b1 = ((arcTan + 360 / 16) + 360) / (360 / 8)
+                    b1.toInt() % 8
+                } else {
+                    if(xDiff > 0) {
+                        2
+                    } else {
+                        6
+                    }
+                }
+
+                if(distance < distances[bucket]) {
+                    distances[bucket] = distance;
+                }
+            }
+
+
+//            val distanceLeft = frontDistance(player.x - player.width / 2, player.y + player.length / 2)
+//            val distanceRight = frontDistance(player.x + player.width / 2, player.y + player.length / 2)
+//
+//            val distanceLeftLeft = frontDistance(player.x - player.width * 2, player.y + player.length / 2)
+//            val distanceRightRight = frontDistance(player.x + player.width * 2, player.y + player.length / 2)
 
 //            val ortogonalDistance = ortogonalDistance(player.)
 
-            val perception = PlayerPerception(player.speedX, player.speedY, (player.x - player.width), (20.0 - player.x - player.width), distanceLeft, distanceRight, distanceLeftLeft, distanceRightRight)
+            val perception = PlayerPerception(player.speedX, player.speedY, distances)
 
+            player.perception = perception
 
 //            println("${player.id} ${perception}")
 
@@ -155,6 +185,8 @@ class GameEngine(val model: GameModel,
                 player.speedX = 0.0;
             }
         }
+
+        player.speedY = -0.001
 
         player.x += player.speedX * delta
         player.y += player.speedY * delta
